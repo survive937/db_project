@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Batch Wise Course Analysis</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        #summary {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Batch Wise Course Analysis</h1>
+    <form id="search-form">
+        <label for="year">Year:</label>
+        <input type="text" id="year" name="year" required>
+        <label for="batch">Batch:</label>
+        <input type="text" id="batch" name="batch" required>
+        <button type="button" onclick="fetchCourses()">Search Courses</button>
+    </form>
+
+    <div id="summary">
+        <!-- Summary text will be inserted here -->
+    </div>
+
+    <h2>Courses:</h2>
+    <table id="courses-table">
+        <thead>
+            <tr>
+                <th>Year</th>
+                <th>Class</th>
+                <th>Course Code</th>
+                <th>Course Title</th>
+                <th>Head</th>
+                <th>Number of Students</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Course data will be inserted here -->
+        </tbody>
+    </table>
+
+    <script>
+        function fetchCourses() {
+            const year = document.getElementById('year').value;
+            const batch = document.getElementById('batch').value;
+
+            fetch(`/api/courses?year=${year}&batch=${batch}`)
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.querySelector('#courses-table tbody');
+                    tableBody.innerHTML = ''; // Clear existing data
+
+                    const summaryText = document.getElementById('summary');
+                    summaryText.innerHTML = `Total students enrolled: ${data.numStudents}`;
+
+                    data.courses.forEach(course => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${course.year}</td>
+                            <td>${course.class}</td>
+                            <td>${course.course_code}</td>
+                            <td>${course.course_title}</td>
+                            <td>${course.head}</td>
+                            <td>${course.num_students || 0}</td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+
+                    if (data.courses.length === 0) {
+                        summaryText.innerHTML = 'No students enrolled in the selected year and batch.';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                });
+        }
+    </script>
+</body>
+</html>
